@@ -3,6 +3,7 @@ import { RouterView } from 'vue-router'
 </script>
 
 <template>
+  <RouterLink to="/admin">Admin</RouterLink>
   <RouterView></RouterView>
 </template>
 
