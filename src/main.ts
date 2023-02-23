@@ -5,7 +5,6 @@ import Home from './Home.vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 
- 
 import './assets/main.css'
 
 const routes = createRouter({

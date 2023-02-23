@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, query, orderBy, limit, documentId, where } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
-
+import { app } from "./firestore";
 
 interface Word {
   en: string,
@@ -17,37 +16,7 @@ interface Question {
   choices: Word[]
 }
 
-const name = ref<string>('isa samed');
-
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyARxPHJYjVLOJjq6lzxh9WZnh1vyYgtj04",
-  authDomain: "langify-45b13.firebaseapp.com",
-  projectId: "langify-45b13",
-  storageBucket: "langify-45b13.appspot.com",
-  messagingSenderId: "796821918654",
-  appId: "1:796821918654:web:32e461599e0b15050edfef"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // User is signed in.
-    alert("Yes user " + user.email)
-    // ...
-  } else {
-    // User is not signed in.
-    // ...
-    alert("No user")
-  }
-});
 
 var lastId : number;
 
@@ -121,40 +90,9 @@ const onChoiceMake = (event: MouseEvent) => {
   }
 }
 
-const email = ref<string>('');
-const password = ref<string>('');
-
-
-const login = () => {
-  signInWithEmailAndPassword(auth, email.value, password.value)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    alert(user.email)
-    // ...
-  })
-  .catch((error) => {
-    const errorCode = error.code;
-    const errorMessage = error.message;
-  });
-}
-
-const logout = () => {
-  signOut(auth).then()
-}
-
 </script>
 
 <template>
-  <div>
-    <input type="text" v-model="email">
-
-  </div>
-  <div>
-    <input type="text" v-model="password">
-  </div>
-  <button @click="login">Login</button>
-  <button @click="logout">Logout</button>
   <div id="qbox" v-if="Object.keys(question).length > 0">
     <div id="word">
       {{ question.context.en }}
