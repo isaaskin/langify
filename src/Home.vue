@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-import { getFirestore, collection, getDocs, query, orderBy, limit, documentId, where } from "firebase/firestore";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore, collection, getDocs, query, orderBy, limit, where } from "firebase/firestore";
 import { app } from "./firestore";
+import Loading from "./components/Loading.vue";
 
 interface Word {
   en: string,
@@ -17,8 +17,9 @@ interface Question {
 }
 
 const db = getFirestore(app);
+const isLoading = ref<boolean>(true);
 
-var lastId : number;
+var lastId: number;
 
 const q = query(collection(db, "words"), orderBy("id", "desc"), limit(1))
 
@@ -32,6 +33,8 @@ getDocs(q).then((doc) => {
 });
 
 const nextQuestion = () => {
+  isLoading.value = true;
+
   words = [];
   let docs = document.getElementsByClassName('choice');
   for (let i = 0; i < docs.length; i++) {
@@ -71,6 +74,8 @@ const getWordById = async (id: number) => {
 }
 
 const generateQuestion = (words: Word[]) => {
+  isLoading.value = false;
+
   let randomNumbers = generateRandomNumbers(words.length, 1);
   return {
     context: words[randomNumbers[0]],
@@ -79,7 +84,7 @@ const generateQuestion = (words: Word[]) => {
 }
 
 const onChoiceMake = (event: MouseEvent) => {
-  let target = event.target! as HTMLElement; 
+  let target = event.target! as HTMLElement;
   if (question.value.context.tr === target.innerHTML) {
     target.classList.add('correct')
     setTimeout(() => {
@@ -93,45 +98,68 @@ const onChoiceMake = (event: MouseEvent) => {
 </script>
 
 <template>
-  <div id="qbox" v-if="Object.keys(question).length > 0">
-    <div id="word">
-      {{ question.context.en }}
+  <div id="container">
+    <div v-if="isLoading">
+      <Loading></Loading>
     </div>
-    <div id="choices">
-      <div class="choice" @click="onChoiceMake"  v-for="c in question.choices">{{ c.tr }}</div>
+    <div v-else>
+      <div id="qbox" v-if="Object.keys(question).length > 0">
+        <div id="word">
+          {{ question.context.en }}
+        </div>
+        <div id="choices">
+          <div class="choice" @click="onChoiceMake" v-for="c in question.choices">{{ c.tr }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-  #qbox {
-    width: 250px;
-  }
-  #word {
-    padding: 15px;
-    text-align: center;
-  }
-  #choices {
-    display: flex;
-    flex-direction: column;
-  }
-  .choice {
-    background-color: lightblue;
-    color: #121212;
-    padding: 10px;
-    margin: 10px;
-    text-align: center;
-    border-radius: 10px;
-    transition: .35s ease;
-  }
-  .wrong {
-    background-color: red;
-    color: white;
-  }
-  .correct {
-    background-color: greenyellow;
-  }
-  .choice:hover {
-    cursor: pointer;
-  }
+#container {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#qbox {
+  width: 400px;
+  height: 300px;
+}
+
+#word {
+  padding: 15px;
+  text-align: center;
+}
+
+#choices {
+  display: flex;
+  flex-direction: column;
+}
+
+.choice {
+  background-color: lightblue;
+  color: #121212;
+  padding: 10px;
+  margin: 10px;
+  text-align: center;
+  border-radius: 10px;
+  transition: .35s ease;
+}
+
+.wrong {
+  background-color: red;
+  color: white;
+}
+
+.correct {
+  background-color: greenyellow;
+}
+
+.choice:hover {
+  cursor: pointer;
+}
 </style>

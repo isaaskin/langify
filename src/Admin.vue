@@ -5,19 +5,25 @@ import { ref } from "vue";
 import { collection, addDoc } from "firebase/firestore"; 
 import { async } from "@firebase/util";
 
-const auth = getAuth(app);
-const isUserLoggedIn = ref<boolean>(false);
+import Loading from './components/Loading.vue';
 
+const auth = getAuth(app);
+
+enum LoginStatus {
+  Loading,
+  LoggedIn,
+  LoggedOut
+}
+
+const loginStatus = ref<LoginStatus>(LoginStatus.Loading);
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // User is signed in.
-    isUserLoggedIn.value = true;
-    // ...
+    loginStatus.value = LoginStatus.LoggedIn;
   } else {
     // User is not signed in.
-    // ...
-    isUserLoggedIn.value = false;
+    loginStatus.value = LoginStatus.LoggedOut;
   }
 });
 
@@ -68,8 +74,10 @@ loadLastDocId();
 </script>
 
 <template>
-  {{ lastDocId }}
-  <div v-if="isUserLoggedIn">
+  <div v-if="loginStatus === LoginStatus.Loading">
+    <Loading></Loading>
+  </div>
+  <div v-else-if="loginStatus === LoginStatus.LoggedIn">
     <button @click="logout">Logout</button>
     <div>
       <form @submit.prevent="addWord">
