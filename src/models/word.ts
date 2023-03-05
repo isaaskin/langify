@@ -2,5 +2,6 @@ export interface Word {
   en: string,
   tr: string,
   id: number,
-  docId: string
+  docId: string,
+  type: number
 }
