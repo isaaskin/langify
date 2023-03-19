@@ -2,6 +2,8 @@
 
 [![Vue.js Test](https://github.com/isaaskin/langify/actions/workflows/vue.js.test.yml/badge.svg)](https://github.com/isaaskin/langify/actions/workflows/vue.js.test.yml)
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c5658324-ae4d-420b-825d-fa310f779c8a/deploy-status)](https://app.netlify.com/sites/langify2/deploys)
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
