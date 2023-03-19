@@ -6,6 +6,7 @@ import { app } from "./firestore";
 import Loading from "./components/Loading.vue";
 import { WordTypeMap } from './models/word_type';
 import type { Word } from "./models/word";
+import { generateRandomNumbers, shuffleArray } from './helpers';
 
 interface Question {
   context: Word,
@@ -15,59 +16,58 @@ interface Question {
 const db = getFirestore(app);
 const isLoading = ref<boolean>(true);
 
-const askedQuestionsId = ref<number[]>([]);
+const askedQuestionsIDs = ref<number[]>([]);
 
 var lastId: number;
-
-const q = query(collection(db, "words"), orderBy("id", "desc"), limit(1))
-
 var words = [] as Word[];
 
 const question = ref<Question>({} as Question);
 
-// Temp solution
-const randomOverlapCount = ref<number>(0);
-const randomLimit = 200;
-
+const q = query(collection(db, "words"), orderBy("id", "desc"), limit(1))
 getDocs(q).then((doc) => {
   lastId = doc.docs[0].data().id;
   nextQuestion();
 });
 
-const nextQuestion = () => {
+const isError = ref<boolean>(false);
+
+const nextQuestion = async () => {
   isLoading.value = true;
 
-  words = [] as Word[];
-  let docs = document.getElementsByClassName('choice');
-  for (let i = 0; i < docs.length; i++) {
-    docs[i].classList.remove('wrong')
-    docs[i].classList.remove('correct')
-  }
-  generateRandomNumbers(lastId, 4).forEach(async n => {
-    let word = await getWordById(n);
-    words.push({
-      en: word.data().en,
-      tr: word.data().tr,
-      id: word.data().id,
-      type: word.data().type,
-      docId: word.id
-    });
-    question.value = generateQuestion(words);
-  });
-}
+  try {
+    let contextID = generateRandomNumbers(lastId, 1, askedQuestionsIDs.value)[0];
+    const wordIDs = [contextID, ...generateRandomNumbers(lastId, 3, [contextID])];
 
-const generateRandomNumbers = (max: number, count: number): number[] => {
-  const randomNumbers = [] as number[];
+    askedQuestionsIDs.value.push(contextID);
 
-  while (randomNumbers.length < count) {
-    let random = Math.floor(Math.random() * max);
-    if (randomNumbers.includes(random)) {
-      continue;
+    words = [] as Word[];
+    let docs = document.getElementsByClassName('choice');
+    for (let i = 0; i < docs.length; i++) {
+      docs[i].classList.remove('wrong')
+      docs[i].classList.remove('correct')
     }
-    randomNumbers.push(random);
-  }
 
-  return randomNumbers;
+    await Promise.all(wordIDs.map(async n => {
+      let word = await getWordById(n);
+      words.push({
+        en: word.data().en,
+        tr: word.data().tr,
+        id: word.data().id,
+        type: word.data().type,
+        docId: word.id
+      });
+    }))
+
+    question.value = {
+        context: words[0],
+        choices: shuffleArray(words)
+      }
+
+  } catch (error) {
+    isError.value = true;
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const getWordById = async (id: number) => {
@@ -75,29 +75,6 @@ const getWordById = async (id: number) => {
     query(collection(db, "words"), where("id", "==", id))
   );
   return doc.docs[0];
-}
-
-const generateQuestion = (words: Word[]) => {
-  console.log("qqqqq")
-  isLoading.value = false;
-
-  let randomNumbers = generateRandomNumbers(words.length, 1);
-
-  while(askedQuestionsId.value.includes(randomNumbers[0])) {
-    if (randomOverlapCount.value > randomLimit) {
-      break;
-    }
-    randomOverlapCount.value++;
-    randomNumbers = generateRandomNumbers(words.length, 1);
-  }
-
-  randomOverlapCount.value = 0;
-  askedQuestionsId.value.push(randomNumbers[0]);
-
-  return {
-    context: words[randomNumbers[0]],
-    choices: words
-  } as Question;
 }
 
 const onChoiceMake = (event: MouseEvent) => {
@@ -122,9 +99,8 @@ const onChoiceMake = (event: MouseEvent) => {
     <div v-else>
       <div class="qbox" v-if="Object.keys(question).length > 0">
         <div class="qbox-info">
-          <div class="qbox-info-light"
-          v-for="value, key in WordTypeMap"
-          :class="{active: key === question.context.type}">
+          <div class="qbox-info-light" v-for="value, key in WordTypeMap"
+            :class="{ active: +key === question.context.type }">
             <i>{{ value.shortName }}</i>
           </div>
         </div>

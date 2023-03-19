@@ -60,7 +60,7 @@ const addWord = () => {
     en: wordToBeAdded.value.en,
     tr: wordToBeAdded.value.tr,
     id: lastDocId.value + 1,
-    type: wordToBeAdded.value.type
+    type: +wordToBeAdded.value.type
   }).then(docRef => {
     wordToBeAdded.value = {} as Word;
     loadLastDocId();
@@ -112,7 +112,7 @@ const updateWord = () => {
   updateDoc(doc(db, "words", selectedFoundWord.value.docId), {
     en: wordToBeUpdated.value.en,
     tr: wordToBeUpdated.value.tr,
-    type: wordToBeUpdated.value.type
+    type: +wordToBeUpdated.value.type
   })
 }
 
