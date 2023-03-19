@@ -1,5 +1,7 @@
 # langify
 
+[![Vue.js Test](https://github.com/isaaskin/langify/actions/workflows/vue.js.test.yml/badge.svg)](https://github.com/isaaskin/langify/actions/workflows/vue.js.test.yml)
+
 This template should help get you started developing with Vue 3 in Vite.
 
 ## Recommended IDE Setup
@@ -37,6 +39,12 @@ npm run dev
 
 ```sh
 npm run build
+```
+
+### Unit test
+
+```sh
+npm run test
 ```
 
 ### Lint with [ESLint](https://eslint.org/)
