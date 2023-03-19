@@ -22,6 +22,10 @@ export const WordTypeMap = {
   5: {
     fullName: "PREPOSITION",
     shortName: "prep."
+  },
+  6: {
+    fullName: "IDIOM",
+    shortName: "idiom"
   }
 } as {
   [key: number]: {
