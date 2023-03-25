@@ -85,13 +85,14 @@ const getWordById = async (id: number) => {
 
 const onChoiceMake = (event: MouseEvent) => {
   let target = event.target! as HTMLElement;
+  let targetToBeFilled = target.parentElement?.parentElement!;
   if (question.value.context.tr === target.innerHTML) {
-    target.classList.add('correct');
+    targetToBeFilled.classList.add('correct');
     setTimeout(() => {
       nextQuestion();
     }, 350)
   } else {
-    target.classList.add('wrong');
+    targetToBeFilled.classList.add('wrong');
   }
 }
 
