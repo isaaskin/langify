@@ -31,6 +31,12 @@ getDocs(q).then((doc) => {
 
 const isError = ref<boolean>(false);
 
+const isShownOriginal = ref<boolean[]>([false, false, false, false]);
+
+const showOriginal = (index: number) => {
+  isShownOriginal.value[index] = !isShownOriginal.value[index];
+}
+
 const nextQuestion = async () => {
   isLoading.value = true;
 
@@ -59,9 +65,9 @@ const nextQuestion = async () => {
     }))
 
     question.value = {
-        context: words[0],
-        choices: shuffleArray(words)
-      }
+      context: words[0],
+      choices: shuffleArray(words)
+    }
 
   } catch (error) {
     isError.value = true;
@@ -80,12 +86,12 @@ const getWordById = async (id: number) => {
 const onChoiceMake = (event: MouseEvent) => {
   let target = event.target! as HTMLElement;
   if (question.value.context.tr === target.innerHTML) {
-    target.classList.add('correct')
+    target.classList.add('correct');
     setTimeout(() => {
       nextQuestion();
     }, 350)
   } else {
-    target.classList.add('wrong')
+    target.classList.add('wrong');
   }
 }
 
@@ -108,7 +114,22 @@ const onChoiceMake = (event: MouseEvent) => {
           {{ question.context.en }}
         </div>
         <div class="qbox-choices">
-          <div class="qbox-choices-choice" @click="onChoiceMake" v-for="c in question.choices">{{ c.tr }}</div>
+          <div class="qbox-choices-choice" @click="onChoiceMake" v-for="c, i in question.choices">
+            <div style="position: relative;">
+              <div v-if="isShownOriginal[i]">
+                {{ c.en }}
+              </div>
+              <div v-else>
+                {{ c.tr }}
+              </div>
+              <div class="qbox-choices-choice-info" style="position: absolute; right: 0px; top: 0px;">
+                <span :class="{ 'on': isShownOriginal[i] }" class="material-icons qbox-choices-choice-info-translate"
+                  @click="showOriginal(i)">
+                  translate
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -116,6 +137,9 @@ const onChoiceMake = (event: MouseEvent) => {
 </template>
 
 <style scoped lang="scss">
+$material-design-icons-font-directory-path: 'material-design-icons-iconfont/dist/fonts/';
+@import 'material-design-icons-iconfont/src/material-design-icons';
+
 .container {
   width: 100%;
   height: 100%;
@@ -164,6 +188,15 @@ const onChoiceMake = (event: MouseEvent) => {
         text-align: center;
         border-radius: 10px;
         transition: .35s ease;
+
+        &-info {
+          &-translate {
+            transition: .35s ease;
+          }
+          &-translate.on {
+            color: green;
+          }
+        }
 
         &:hover {
           cursor: pointer;
