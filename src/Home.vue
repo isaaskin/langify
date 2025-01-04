@@ -7,6 +7,9 @@ import Loading from "./components/Loading.vue";
 import { WordTypeMap } from './models/word_type';
 import type { Word } from "./models/word";
 import { generateRandomNumbers, shuffleArray } from './helpers';
+import JSConfetti from 'js-confetti'
+
+const jsConfetti = new JSConfetti();
 
 interface Question {
   context: Word,
@@ -33,12 +36,14 @@ const isError = ref<boolean>(false);
 
 const isShownOriginal = ref<boolean[]>([false, false, false, false]);
 
-const showOriginal = (index: number) => {
+const showOriginal = (index: number, event: MouseEvent) => {
+  event.stopPropagation();
   isShownOriginal.value[index] = !isShownOriginal.value[index];
 }
 
 const nextQuestion = async () => {
   isLoading.value = true;
+  isShownOriginal.value = [false, false, false, false];
 
   try {
     let contextID = generateRandomNumbers(lastId, 1, askedQuestionsIDs.value)[0];
@@ -83,16 +88,19 @@ const getWordById = async (id: number) => {
   return doc.docs[0];
 }
 
-const onChoiceMake = (event: MouseEvent) => {
-  let target = event.target! as HTMLElement;
-  let targetToBeFilled = target.parentElement?.parentElement!;
-  if (question.value.context.tr === target.innerHTML) {
-    targetToBeFilled.classList.add('correct');
+const choiceDOMRefs = ref<HTMLElement[]>([]);
+
+const onChoiceMake = (q_id: number) => {
+  let choiceDOMRef = choiceDOMRefs.value[q_id];
+
+  if (question.value.context.docId === question.value.choices[q_id].docId) {
+    jsConfetti.addConfetti();
+    choiceDOMRef.classList.add('correct');
     setTimeout(() => {
       nextQuestion();
-    }, 350)
+    }, 250)
   } else {
-    targetToBeFilled.classList.add('wrong');
+    choiceDOMRef.classList.add('wrong');
   }
 }
 
@@ -115,7 +123,7 @@ const onChoiceMake = (event: MouseEvent) => {
           {{ question.context.en }}
         </div>
         <div class="qbox-choices">
-          <div class="qbox-choices-choice" @click="onChoiceMake" v-for="c, i in question.choices">
+          <div ref="choiceDOMRefs" class="qbox-choices-choice" :q-id="i" @click="onChoiceMake(i)" v-for="c, i in question.choices">
             <div style="position: relative;">
               <div v-if="isShownOriginal[i]">
                 {{ c.en }}
@@ -125,7 +133,7 @@ const onChoiceMake = (event: MouseEvent) => {
               </div>
               <div class="qbox-choices-choice-info" style="position: absolute; right: 0px; top: 0px;">
                 <span :class="{ 'on': isShownOriginal[i] }" class="material-icons qbox-choices-choice-info-translate"
-                  @click="showOriginal(i)">
+                  @click="showOriginal(i, $event)">
                   translate
                 </span>
               </div>
@@ -192,7 +200,7 @@ $material-design-icons-font-directory-path: 'material-design-icons-iconfont/dist
 
         &-info {
           &-translate {
-            transition: .35s ease;
+            transition: .25s ease;
           }
           &-translate.on {
             color: green;
