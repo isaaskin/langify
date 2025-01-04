@@ -112,15 +112,11 @@ const onChoiceMake = (q_id: number) => {
       <Loading></Loading>
     </div>
     <div v-else>
+      <div>
+      </div>
       <div class="qbox" v-if="Object.keys(question).length > 0">
-        <div class="qbox-info">
-          <div class="qbox-info-light" v-for="value, key in WordTypeMap"
-            :class="{ active: +key === question.context.type }">
-            <i>{{ value.shortName }}</i>
-          </div>
-        </div>
         <div class="qbox-word">
-          {{ question.context.en }}
+          {{ question.context.en }} <span class="qbox-word-type">({{ WordTypeMap[question.context.type].shortName }})</span>
         </div>
         <div class="qbox-choices">
           <div ref="choiceDOMRefs" class="qbox-choices-choice" :q-id="i" @click="onChoiceMake(i)" v-for="c, i in question.choices">
@@ -160,32 +156,21 @@ $material-design-icons-font-directory-path: 'material-design-icons-iconfont/dist
   align-items: center;
 
   .qbox {
-    width: 400px;
-    height: 300px;
+    max-width: 400px;
+    min-width: 360px;
 
-    &-info {
-      display: flex;
-      justify-content: space-around;
+    &-word {
+      text-align: center;
 
-      &-light {
-        padding: 10px;
-        text-align: center;
-        opacity: 0.1;
-        color: ghostwhite;
-
-        &.active {
-          opacity: 1.0;
-          color: greenyellow;
-        }
+      &-type {
+        font-size: 15px;
+        color: greenyellow;
+        font-style: italic;
       }
     }
 
-    &-word {
-      padding: 15px;
-      text-align: center;
-    }
-
     &-choices {
+      margin-top: 20px;
       display: flex;
       flex-direction: column;
 
@@ -196,14 +181,14 @@ $material-design-icons-font-directory-path: 'material-design-icons-iconfont/dist
         margin: 10px;
         text-align: center;
         border-radius: 10px;
-        transition: .35s ease;
+        transition: .25s ease;
 
         &-info {
           &-translate {
             transition: .25s ease;
           }
           &-translate.on {
-            color: green;
+            color: greenyellow;
           }
         }
 
